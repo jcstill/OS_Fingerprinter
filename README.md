@@ -4,7 +4,7 @@ Groups tools used for OS detection into one easy to use package
 
 basically build on the principles from P4wnP1's Ethernet over USB and usb connection to identify the Target Machine's Operating System.
 
-USB over Enternet:
+P4wnP1's USB over Enternet is based on:
 https://github.com/samyk/poisontap/blob/master/pi_startup.sh
 
 Network scans:
