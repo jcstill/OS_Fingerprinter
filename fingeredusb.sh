@@ -1,3 +1,11 @@
+#-------------------------------------------------------------------------------------
+#	This starts a capture service and then writes the data to a file
+#	
+#	yes, i know, there are probably more effective ways of doing this,
+#	but this is how i did it
+#
+#	the comment blocks are mainly for me to know what i want to add
+#-------------------------------------------------------------------------------------
 #!/bin/bash
 version=0.1
 capturetime=10
