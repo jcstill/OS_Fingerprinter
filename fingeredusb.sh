@@ -6,18 +6,21 @@
 #
 #	the comment blocks are mainly for me to know what i want to add
 #
-#	BUGS: 	this script is started from /etc/rc.local through a launcher
+#	BUGS:	this script is started from /etc/rc.local through a launcher
 #		script (that waits for 30 sec for the boot process to finish)
 #		however, the results of the scan (in scan_#.txt while plugged 
 #		into a computer is empty (maybe no data on port at time?)
-#		
+#
+#	Thoughts:	use P4wnP1 to emulate an ethernet device. then get 
+#			ip of target, and ping that target to "stimulate" the port
+#			to get a response from the host 
+#
 #-------------------------------------------------------------------------------------
+
 #!/bin/bash
-version=0.1
 capturetime=10
-verbose=0
-log=0
-param="$1"
+address=www.google.com #for testing purposes but would be 172.16.0.2 on P4wnP1
+
 check_params(){
 #-------------------------------------------------------------------------------------
 #	add code to allow user to specify how long to scan for
@@ -90,6 +93,9 @@ check_modprobe(){
 	fi
 }
 check_tcpdump(){
+#-------------------------------------------------------------------------------------
+#	was going to use this for packet analysis but might not
+#-------------------------------------------------------------------------------------
 	if [ "${verbose}" = 1 ]
 	then
 		if [ "${log}" = 1 ]
@@ -112,18 +118,23 @@ check_tcpdump(){
 			fi
 		fi
 	else
-		if [ "${log}" = 1 ]
+		if [ "${verbose}" = 1 ]
 		then
-			printf "Not installed.\n" >> /home/pi/OS_Fingerprinter/log.txt
+			if [ "${log}" = 1 ]
+			then
+				printf "Not installed.\n" >> /home/pi/OS_Fingerprinter/log.txt
+			else
+				printf "Not installed.\n"
+			fi
 		else
-			printf "Not installed.\n"
-			read -p "Would you like to Install? [y/n] " yn
-			case $yn in
-				[Yy]* ) sudo apt-get install -y tcpdump; break;;
-				[Nn]* ) end_program; exit;;
-				* ) echo "Only yes or no.";;
-			esac
+			printf "tcpdump not installed.\n"
 		fi
+		read -p "Would you like to Install? [y/n] " yn
+		case $yn in
+			[Yy]* ) sudo apt-get install -y tcpdump; break;;
+			[Nn]* ) end_program; exit;;
+			* ) echo "Only yes or no.";;
+		esac
 	fi
 }
 capture_usb(){
@@ -238,6 +249,16 @@ capture_usb(){
 	then
 		if [ "${log}" = 1 ]
 		then
+			printf "\nStimulating host..." >> /home/pi/OS_Fingerprinter/log.txt
+		else
+			printf "\nStimulating host..."
+		fi
+	fi
+	ping ${address} &> /dev/null & # i want this after the capture service starts so i can identify the start points (if i need to )
+	if [ "${verbose}" = 1 ]
+	then
+		if [ "${log}" = 1 ]
+		then
 			printf "\nCapturing for $capturetime second" >> /home/pi/OS_Fingerprinter/log.txt
 			if [ "${capturetime}" != 1 ]
 			then 
@@ -266,6 +287,16 @@ capture_usb(){
 		fi
 	fi
 	sudo killall cat
+	if [ "${verbose}" = 1 ]
+	then
+		if [ "${log}" = 1 ]
+		then
+			printf "\nKilling Ping...\n" >> /home/pi/OS_Fingerprinter/log.txt
+		else
+			printf "\nKilling Ping...\n"
+		fi
+	fi
+	sudo killall ping
 	if [ "${log}" = 1 ]
 	then
 		printf "\n           USB Capture Finished          \n" >> /home/pi/OS_Fingerprinter/log.txt
@@ -366,7 +397,14 @@ init_prompt(){
 	printf "Operating System Fingerprinting via USB v$version\n" > /home/pi/OS_Fingerprinter/log.txt
 	printf "Operating System Fingerprinting via USB v$version\n"
 }
+init_varbs(){
+version=0.1
+verbose=0
+log=0
+param="$1"
+}
 #	Main Program:
+init_varbs
 #kill_led #i commented this out because it doesn't seem to work as of now
 init_prompt
 check_params
